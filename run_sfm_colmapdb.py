@@ -132,8 +132,7 @@ class DGSfM:
 
     def run_mapping_on_dataset(self, dataset: COLMAPDataset):
         for scene in dataset:
-            # if scene.scene_name not in ['botanical_garden', 'boulders']:
-            #     continue
+            if scene.scene_name in ['bridge', 'botanical_garden', 'boulders', 'courtyard']: continue
             self.run_mapping(scene, dataset.name)
 
     def run_mapping_on_scene(self, scene_name: str, dataset: COLMAPDataset):
@@ -287,8 +286,8 @@ if __name__ == '__main__':
     dataset = COLMAPDataset(cfg)
 
     dgsfm = DGSfM(cfg)
-    # dgsfm.run_mapping_on_dataset(dataset)
-    dgsfm.run_mapping_on_scene("london_bridge", dataset)
+    dgsfm.run_mapping_on_dataset(dataset)
+    # dgsfm.run_mapping_on_scene("pagoda_river", dataset)
     
     if cfg.dataset_name in ['ETH3D', 'IMC2021']:
         eval_dataset(cfg)

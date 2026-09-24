@@ -179,7 +179,7 @@ class CorrespondenceGenerator:
         print(f"Generating correspondences for dataset with {self.cfg.viewgraph.feats_model}-{self.cfg.viewgraph.match_model}...")
         for scene in dataset:
             print(scene.scene_name)
-            if scene.scene_name not in ['london_bridge', 'memorial']:
+            if scene.scene_name not in ['nyhavn', 'pagoda_river']:
                 continue
             if self.cfg.viewgraph.feats_model in self.features_detectors:
                 self.generate_sparse_features_and_matches(scene)

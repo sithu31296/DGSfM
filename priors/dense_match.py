@@ -14,6 +14,7 @@ class DenseMatching:
     def pairs_matching(self, dataset: COLMAPDataset) -> None:
         for scene in dataset:
             print(scene.scene_name)
+            if scene.scene_name not in ['sagrada_familia']: continue
             scene.create_pairs()
 
             with h5py.File(scene.dense_match_path, 'w') as f:

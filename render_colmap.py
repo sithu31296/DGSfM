@@ -216,6 +216,8 @@ def save_trajectory(path, eyes, rotations, args):
         "width": args.width,
         "height": args.height,
         "fov": args.fov,
+        "focal_length_px": args.focal_length,
+        "zoom": args.zoom,
         "keyframes": [
             {"eye": eye.tolist(), "target": (eye + rotation[:, 2]).tolist(),
              "up": (-rotation[:, 1]).tolist()}
@@ -301,7 +303,10 @@ def parse_args(argv=None):
     parser.add_argument("--no-video", action="store_true", help="Save PNGs only, without running FFmpeg")
     parser.add_argument("--width", type=int, default=1280)
     parser.add_argument("--height", type=int, default=720)
-    parser.add_argument("--fov", type=float, default=60, help="Vertical field of view in degrees; all paths use this virtual pinhole camera")
+    projection = parser.add_mutually_exclusive_group()
+    projection.add_argument("--fov", type=float, default=60, help="Base vertical field of view in degrees, before --zoom")
+    projection.add_argument("--focal-length", "--focal-length-px", type=float, help="Rendering focal length in output-image pixels (fx=fy), before --zoom; replaces --fov")
+    parser.add_argument("--zoom", type=float, default=1, help="Focal-length multiplier: 2 for closeup, 0.5 for a wider view; keeps camera poses fixed")
     parser.add_argument("--point-size", type=float, default=2, help="Point diameter in pixels")
     parser.add_argument("--show-cameras", action="store_true", help="Draw wireframe cones for all registered cameras")
     parser.add_argument("--camera-size", type=float, help="Camera cone depth in model units; default: 5%% of the robust scene radius")
@@ -322,7 +327,7 @@ def parse_args(argv=None):
         parser.error("--frames, --width, and --height must be positive")
     if not 0 < args.fov < 180 or not -89 < args.elevation < 89:
         parser.error("--fov must be in (0, 180) and --elevation in (-89, 89)")
-    for name in ("point_size", "radius", "near", "fps", "camera_size", "camera_line_width"):
+    for name in ("point_size", "radius", "near", "fps", "camera_size", "camera_line_width", "focal_length", "zoom"):
         value = getattr(args, name)
         if value is not None and (not np.isfinite(value) or value <= 0):
             parser.error(f"--{name.replace('_', '-')} must be finite and positive")
@@ -338,6 +343,18 @@ def parse_args(argv=None):
         parser.error("--trajectory manual requires --keyframes (and vice versa)")
     if args.image_list and args.trajectory != "flythrough":
         parser.error("--image-list requires --trajectory flythrough")
+    # Keep orbit fitting independent of focal-length overrides and zoom, or
+    # moving the camera farther away would cancel the requested closeup.
+    args.orbit_fov = args.fov
+    base_focal = args.focal_length if args.focal_length is not None else args.height / (2 * np.tan(np.deg2rad(args.fov) / 2))
+    with np.errstate(over="ignore", under="ignore", divide="ignore"):
+        args.focal_length = base_focal * args.zoom
+    if not np.isfinite(args.focal_length) or args.focal_length <= 0:
+        parser.error("The focal length and zoom combination must produce a finite positive focal length")
+    with np.errstate(over="ignore", under="ignore", divide="ignore"):
+        args.fov = float(np.rad2deg(2 * np.arctan((args.height / 2) / args.focal_length)))
+    if not 0 < args.fov < 180:
+        parser.error("The focal length and zoom combination must produce a finite focal length and field of view in (0, 180)")
     return args
 
 
@@ -387,7 +404,7 @@ def run(args):
 
         if args.trajectory == "turntable":
             target = center if args.center is None else np.asarray(args.center)
-            half_fov = np.deg2rad(args.fov) / 2
+            half_fov = np.deg2rad(args.orbit_fov) / 2
             half_fov = min(half_fov, np.arctan(np.tan(half_fov) * args.width / args.height))
             radius = args.radius or (1.15 * (scene_radius + np.linalg.norm(target - center)) / np.sin(half_fov))
             eyes, rotations = turntable_path(target, up, radius, args.elevation, args.start_angle, args.frames)
@@ -407,6 +424,7 @@ def run(args):
         args.output.mkdir(parents=True, exist_ok=True)
         save_trajectory(args.output / "trajectory.json", eyes, rotations, args)
         print(f"Loaded {len(points):,} points; saved {len(eyes)} camera poses to {args.output / 'trajectory.json'}")
+        print(f"Rendering focal length: {args.focal_length:.2f} px; vertical FOV: {args.fov:.2f} degrees; zoom: {args.zoom:g}x")
         if not args.dry_run:
             render_frames(points, colors, eyes, rotations, args, o3d, frustums)
             if ffmpeg is not None:

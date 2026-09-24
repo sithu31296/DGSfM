@@ -8,9 +8,9 @@ viewgraph:
   num_feats               : 10000
   feats_confidence        : 0.05
 
-  min_num_inliers         : 25
-  min_inlier_ratio        : 0.1
-  depth_error_threshold   : 0.3
+  min_num_inliers         : 50
+  min_inlier_ratio        : 0.25
+  depth_error_threshold   : 0.2
   doppelgangers_threshold : 0.8
   min_edge_score          : 0.3
   epipolar_error          : 1.0

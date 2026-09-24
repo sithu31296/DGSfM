@@ -52,7 +52,7 @@ def save_image_pairs(image_pairs: list[tuple[str, str]], save_path: Path) -> Non
         f.writelines(pairs)
 
 def save_image_pairs_with_scores(image_pairs: list[tuple[str, str]], scores: list[float], save_path: Path) -> None:
-    pairs = [f"{img1}<>{img2} {score:.2f}\n" for (img1, img2), score in zip(image_pairs, scores)]
+    pairs = [f"{img1}<>{img2}<>{score:.2f}\n" for (img1, img2), score in zip(image_pairs, scores)]
     with open(save_path, "w") as f:
         f.writelines(pairs)
 

@@ -71,6 +71,7 @@ def run(cfg: DGSfMConfig):
     dataset = COLMAPDataset(cfg)
     for scene in dataset:
         print(scene.scene_name)
+        if scene.scene_name not in ['nyhavn', 'pagoda_river']: continue
         create_colmap_database(scene)
 
 
