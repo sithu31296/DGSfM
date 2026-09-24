@@ -1,0 +1,17 @@
+root                      : /mnt/personal/aungsith/benchmarks/eth3d
+dataset_name              : ETH3D
+
+viewgraph:
+  feats_model             : LoMaB
+  match_model             : LoMaB
+  depth_model             : MoGe2   # Options: UniDepth2, MoGe1, MoGe2, MoGe3, ZoeDepth
+  num_feats               : 4096
+
+  min_num_inliers         : 15
+  min_inlier_ratio        : 0.25
+  depth_error_threshold   : 0.3
+  doppelgangers_threshold : 0.8
+
+mapping:
+  min_num_views_per_track : 3
+  gp_num_iters            : 100

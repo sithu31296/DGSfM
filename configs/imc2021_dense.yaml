@@ -1,0 +1,22 @@
+root                      : /mnt/personal/aungsith/benchmarks/imc2021
+dataset_name              : IMC2021
+pose_error_thresholds     : [3, 5, 10]
+
+viewgraph:
+  feats_model             : RoMav1
+  match_model             : RoMav1
+  depth_model             : MoGe2
+  num_feats               : 8192
+
+  min_num_inliers         : 30
+  min_inlier_ratio        : 0.2
+  depth_error_threshold   : 0.2
+  doppelgangers_threshold : 0.8
+  min_edge_score          : 0.2
+  epipolar_error          : 1.0
+  reprojection_error      : 12.0
+  share_focal             : false
+
+mapping:
+  min_num_views_per_track : 3
+  gp_num_iters            : 50

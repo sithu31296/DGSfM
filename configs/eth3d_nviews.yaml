@@ -1,0 +1,13 @@
+root          : /mnt/personal/aungsith/benchmarks/GGPT_eval/ind_data/eth3d/4
+dataset_name  : ETH3D
+
+viewgraph:
+  min_num_inliers         : 15
+  min_inlier_ratio        : 0.1
+  depth_error_threshold   : 0.2
+  doppelgangers_threshold : 0.6
+
+mapping:
+  min_num_views_per_track : 2
+  gp_num_runs             : 1
+  gp_num_iters            : 100

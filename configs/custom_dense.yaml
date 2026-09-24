@@ -1,0 +1,22 @@
+root                      : /mnt/personal/aungsith/benchmarks/custom
+dataset_name              : Custom
+
+viewgraph:
+  feats_model             : RoMav2
+  match_model             : RoMav2
+  depth_model             : MoGe2   # Options: UniDepth2, MoGe1, MoGe2, MoGe3, ZoeDepth
+  num_feats               : 10000
+
+  min_num_inliers         : 25
+  min_inlier_ratio        : 0.2
+  depth_error_threshold   : 0.3
+  disambiguation_method   : false
+  doppelgangers_threshold : 0.8
+  min_edge_score          : 0.3
+  epipolar_error          : 1.0
+  reprojection_error      : 16.0
+  share_focal             : false
+
+mapping:
+  min_num_views_per_track : 2
+  gp_num_iters            : 100

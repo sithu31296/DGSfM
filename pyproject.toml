@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dgsfm"
+version = "0.0.1"
+description = "DGSfM"
+readme = "README.md"
+license = {text = "MIT"}
+dependencies = [
+    # Core runtime dependencies
+    "numpy",
+    "scipy",
+    "pillow",
+    "pillow-heif",
+    "opencv-python",
+    "h5py",
+    "PyYAML",
+    "omegaconf",
+    "networkx",
+    "tqdm",
+    "loguru",
+    "tabulate",
+    "pycolmap",
+    "pypose",
+    "plyfile",
+
+    # Models and solvers used by the supplied configurations
+    "moge @ git+https://github.com/microsoft/MoGe.git",
+    "unidepth @ git+https://github.com/lpiccinelli-eth/UniDepth.git",
+    "unik3d @ git+https://github.com/kocurvik/UniK3D.git",
+    "lomatch @ git+https://github.com/davnords/LoMa.git",
+    "romatch",
+    "fused-local-corr",
+    "romav2 @ git+https://github.com/Parskatt/RoMaV2.git",
+    "poselib @ git+https://github.com/kocurvik/PoseLib.git@mdrpbench",
+]
+requires-python = ">=3.11"
+
+[project.optional-dependencies]
+render = ["open3d>=0.18"]
+
+[project.urls]
+Homepage = "https://github.com/sithu31296/DGSfM"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["dgsfm*"]
