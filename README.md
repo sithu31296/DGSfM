@@ -30,7 +30,7 @@ pip install git+https://github.com/pypose/bae.git --no-build-isolation
 
 ## Quick start
 
-1. Create a configuration from [`configs/eth3d.yaml`](configs/eth3d.yaml) and set `root` to your dataset directory.
+1. Create a configuration from [`configs/custom.yaml`](configs/custom.yaml) and set `root` to your dataset directory.
 2. Arrange your images as described in [Dataset layout](#dataset-layout).
 3. Download the Doppelgangers++ [checkpoint](https://huggingface.co/doppelgangers25/doppelgangers_plusplus/tree/main) (save it to `third_party/checkpoints`) if you use the default disambiguation stage.
 4. Run the commands in [Pipeline](#pipeline), always passing the same configuration file.
@@ -45,7 +45,7 @@ python priors/colmapdb.py -c configs/my_scene.yaml
 python run_sfm_colmapdb.py -c configs/my_scene.yaml
 ```
 
-This example uses the sparse LoMa configuration in `eth3d.yaml`, so it does not need the dense-matching command.
+This example uses the sparse LoMa configuration in `custom.yaml`, so it does not need the dense-matching command.
 
 ## Dataset layout
 
@@ -77,7 +77,7 @@ matching_type: exhaustive
 
 ## Configuration
 
-Configuration files are YAML overrides of the defaults defined in [`dgsfm/database/config.py`](dgsfm/database/config.py). The provided [ETH3D](configs/eth3d.yaml) and [IMC 2021](configs/imc2021.yaml) files are good starting points.
+Configuration files are YAML overrides of the defaults defined in [`dgsfm/database/config.py`](dgsfm/database/config.py). The provided [Custom](configs/custom.yaml), [ETH3D](configs/eth3d.yaml) and [IMC 2021](configs/imc2021.yaml) files are good starting points.
 
 The settings most commonly changed for a new dataset are:
 
@@ -122,17 +122,17 @@ Run every command from the repository root and use the same `-c` configuration a
 For the default sparse configuration, run:
 
 ```bash
-python priors/monodepth.py -c configs/eth3d.yaml
-python priors/disambiguation.py -c configs/eth3d.yaml
-python priors/feats_corrs.py -c configs/eth3d.yaml
-python priors/colmapdb.py -c configs/eth3d.yaml
-python run_sfm_colmapdb.py -c configs/eth3d.yaml
+python priors/monodepth.py -c configs/custom.yaml
+python priors/disambiguation.py -c configs/custom.yaml
+python priors/feats_corrs.py -c configs/custom.yaml
+python priors/colmapdb.py -c configs/custom.yaml
+python run_sfm_colmapdb.py -c configs/custom.yaml
 ```
 
 For a dense RoMa configuration, insert this command between disambiguation and feature generation:
 
 ```bash
-python priors/dense_match.py -c configs/my_dense_config.yaml
+python priors/dense_match.py -c configs/custom_dense.yaml
 ```
 
 ## Outputs
@@ -182,6 +182,19 @@ python render_colmap.py /path/to/model --trajectory flythrough \
 ```
 
 `camera_order.txt` contains one registered image name per line, exactly as stored in COLMAP. Choose a spatially sensible order for unordered photo collections. Fly-throughs interpolate positions linearly and rotations with SLERP, spending equal time between each pair of keyframes; they do not avoid obstacles. All modes use a virtual pinhole camera with `--fov` (vertical degrees), `--width`, and `--height`, rather than the source images' intrinsics or distortion.
+
+Use `--zoom 2` for a closeup or `--zoom 0.5` for a wider view. Zoom multiplies the rendering focal length while keeping the camera positions and orientations fixed, including for automatic turntables. To specify an absolute focal length, use `--focal-length 1000` (alias `--focal-length-px`) in **output-image pixels**, with `fx = fy`. Larger focal lengths zoom in; smaller ones zoom out. Pixel focal lengths depend on output resolution: at 720 pixels high, the default 60-degree vertical FOV corresponds to about 624 pixels. `--focal-length` and `--fov` are mutually exclusive; either may be combined with `--zoom`.
+
+```bash
+python render_colmap.py /path/to/model --trajectory flythrough \
+    --zoom 2 --output renders/closeup --software-rendering
+python render_colmap.py /path/to/model --trajectory flythrough \
+    --zoom 0.5 --output renders/wide --software-rendering
+python render_colmap.py /path/to/model --trajectory turntable \
+    --focal-length 1000 --output renders/telephoto --software-rendering
+```
+
+For automatic turntables, `--fov` still sets the base scene framing; focal-length overrides and zoom are then applied without moving the orbit. The exported `fov` and `focal_length_px` are the effective values after zoom. When replaying a saved path, use its effective `--fov` or `--focal-length` with the default `--zoom 1` to reproduce the projection. Point diameters remain controlled by `--point-size` in pixels.
 
 For a manual path, create `path.json` using **world coordinates in the reconstruction**:
 
@@ -236,9 +249,11 @@ ffmpeg -framerate 30 -i renders/orbit/%06d.png \
 
 If your collection has no ground-truth COLMAP model, the reconstruction is still written before evaluation begins. The current entry point expects `colmap_gt/` for its final evaluation step; remove or bypass that step in [`run_sfm_colmapdb.py`](run_sfm_colmapdb.py) when reconstructing an unevaluated custom collection.
 
+
+<!-- 
 ## Troubleshooting
 
 - **`FileNotFoundError` for a prior or database:** run the prior stages in order and confirm that every scene contains writable `priors/` and `databases/` directories.
 - **Missing Doppelgangers++ checkpoint:** confirm the exact path is `third_party/checkpoints/checkpoint-dg.pth`, or disable disambiguation in the YAML configuration.
 - **Out-of-memory during matching:** lower `viewgraph.num_feats`, use `matching_type: sequential`, or use a smaller depth/matching model.
-- **No CUDA device available:** DGSfM's supplied models and defaults target `cuda`; use a CUDA-enabled PyTorch environment.
+- **No CUDA device available:** DGSfM's supplied models and defaults target `cuda`; use a CUDA-enabled PyTorch environment. -->
